@@ -1,10 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 
-namespace Cribbage
+namespace CribbageModels
 {
+    public enum ScoreName
+    {
+        Fifteen,
+        Run,
+        Pair,
+        ThreeOfaKind,
+        FourOfAKind,
+        HisNibs,
+        HisNobs,
+        CountedRun,
+        ThirtyOne,
+        Go,
+        Flush,
+        LastCard
+    }
+
+
     public enum Owner
     {
         Player,
@@ -137,7 +153,7 @@ namespace Cribbage
         public ScoreCollection()
         {
             Accepted = false;
-            Scores = new ObservableCollection<ScoreInstance>();
+            Scores = new List<ScoreInstance>();
             Total = 0;
             ScoreType = ScoreType.Unspecified;
             ActualScore = 0;
@@ -145,11 +161,11 @@ namespace Cribbage
 
         public ScoreCollection(string s)
         {
-            Scores = new ObservableCollection<ScoreInstance>();
+            Scores = new List<ScoreInstance>();
             Load(s);
         }
 
-        public ObservableCollection<ScoreInstance> Scores { get; set; }
+        public List<ScoreInstance> Scores { get; set; }
 
         public ScoreType ScoreType { get; set; }
 
@@ -349,6 +365,64 @@ namespace Cribbage
             }
 
             return true;
+        }
+    }
+
+
+
+    public class Score
+    {
+
+        public static string[] ScoreDescription =
+       {
+            "fifteen", "run", "pair", "three of a kind", "four of a kind",
+            "jack of the same suit", "cut a jack", "a run", "hit 31", "hit go", "flush",
+            "last card"
+        };
+
+        public static string[] PlayerScoreDescription =
+        {
+            "scored fifteen", "got a run", "scored a pair", "scored three of a kind", "scored four of a kind",
+            "have jack of the same suit", "cut a jack", "have a run", "hit 31", "hit go", "have a flush",
+            "have last card"
+        };
+
+        public static string[] ComputerScoreDescription =
+        {
+            "scored fifteen", "got a run", "scored a pair", "scored three of a kind", "scored four of a kind",
+            "has jack of the same suit", "cut a jack", "has a run", "hit 31", "hit go", "has a flush", "has last card"
+        };
+
+        private Score()
+        {
+        }
+
+        public List<Card> Cards { get; } = new List<Card>();
+
+        public Score(ScoreName scoreName, int value, List<Card> cards)
+        {
+            ScoreName = scoreName;
+            Value = value;
+            if (cards != null)
+                Cards.AddRange(cards);
+        }
+
+        public ScoreName ScoreName { get; set; }
+        public int Value { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format($"{Score.PlayerScoreDescription[(int)ScoreName]} for {Value}");
+        }
+
+        public string ToString(PlayerType player)
+        {
+            if (player == PlayerType.Player)
+            {
+                return string.Format($"{Score.PlayerScoreDescription[(int)ScoreName]} for {Value}");
+            }
+
+            return string.Format($"{Score.ComputerScoreDescription[(int)ScoreName]} for {Value}");
         }
     }
 }

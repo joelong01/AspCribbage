@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Cards;
+using CribbageModels;
 using Combinatorics.Collections;
 using Cribbage;
 using Cribbage.Players;
