@@ -1,9 +1,7 @@
-﻿using Cards;
-using Cribbage;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace AspCribbage.Models
-{
+namespace CribbageModels
+{ 
     public class CutCardsResponse
     {
 

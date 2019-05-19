@@ -1,6 +1,6 @@
-﻿using AspCribbage.Models;
-using Cards;
+﻿
 using Cribbage;
+using CribbageModels;
 using CribbagePlayers;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -15,6 +15,8 @@ namespace AspCribbage.Controllers
     [ApiController]
     public class CribbageController : ControllerBase
     {
+        private Deck _deck = new Deck();
+
         // GET: cribbage/help
         [HttpGet("help")]
         [ActionName("GetHelp")]
@@ -45,7 +47,7 @@ namespace AspCribbage.Controllers
         [ActionName("GetDeck")]
         public ActionResult<List<Card>> GetDeck()
         {
-            return Deck.GetDeck();
+            return _deck.Cards;
         }
 
 
@@ -71,7 +73,7 @@ namespace AspCribbage.Controllers
         [ActionName("GetCutCards")]
         public async Task<ActionResult<CutCardsResponse>> GetCutCardsAsync()
         {
-            
+
             string url = "https://www.random.org/sequences/?min=0&max=51&col=1&format=plain&rnd=new";
             HttpClient client = new HttpClient();
             HttpResponseMessage response = await client.GetAsync(url);
@@ -82,13 +84,13 @@ namespace AspCribbage.Controllers
 
                 Card playerCard = Card.CardNameToCard((CardName)int.Parse(values[0]));
                 playerCard.Owner = Owner.Computer;
-            
+
                 Card computerCard = Card.CardNameToCard((CardName)int.Parse(values[1]));
                 computerCard.Owner = Owner.Player;
 
 
                 string repeatUrl = $"cribbage/cutcards/{playerCard.CardName},{computerCard.CardName}";
-                return new CutCardsResponse(playerCard, computerCard,  repeatUrl);
+                return new CutCardsResponse(playerCard, computerCard, repeatUrl);
 
             }
 
@@ -155,8 +157,8 @@ namespace AspCribbage.Controllers
             cards[1].Owner = Owner.Player;
             string repeatUrl = $"cribbage/cutcards/{cards[0].CardName},{cards[1].CardName}";
             return new CutCardsResponse(cards[0], cards[1], repeatUrl);
-        
-         
+
+
         }
 
         //
@@ -333,7 +335,7 @@ namespace AspCribbage.Controllers
             string url = "https://www.random.org/sequences/?min=0&max=51&col=1&format=plain&rnd=new";
             HttpClient client = new HttpClient();
             HttpResponseMessage response = await client.GetAsync(url);
-            List<Card> deck = Deck.GetDeck();
+
             if (response.IsSuccessStatusCode)
             {
                 string randomInts = await response.Content.ReadAsStringAsync();
@@ -353,7 +355,7 @@ namespace AspCribbage.Controllers
         //  
         //
         //  URL examples:
-        //                 https://localhost:44338/cribbage/getrandomhand/true/46,17,10,35,43,44,1,38,14,3,7,50,19,15,2,48,8,25,13,6,42,40,27,28,21,36,33,26,51,16,32,9,12,4,45,37,30,49,47,34,5,20,11,22,0,39,18,24,29,41,23,31,
+        //                https://localhost:44338/cribbage/getrandomhand/true/46,17,10,35,43,44,1,38,14,3,7,50,19,
         //
         [HttpGet("getrandomhand/{isComputerCrib}/{sequenceCSV}")]
         [ActionName("GetRandomHandAsync")]
@@ -369,20 +371,20 @@ namespace AspCribbage.Controllers
         }
         private async Task<GetRandomHandResponse> GetRandomHandAsync(int[] randomSequence, bool isComputerCrib)
         {
-            List<Card> deck = Deck.GetDeck();
+
             List<Card> playerCards = new List<Card>();
             List<Card> computerCards = new List<Card>();
             string csv = "";
             for (int i = 0; i < 6; i++)
             {
-                Card card = deck[randomSequence[i]];
+                Card card = _deck.Cards[randomSequence[i]];
                 card.Owner = Owner.Player;
                 playerCards.Add(card);
                 csv += $"{randomSequence[i]},";
             }
             for (int i = 6; i < 12; i++)
             {
-                Card card = deck[randomSequence[i]];
+                Card card = _deck.Cards[randomSequence[i]];
                 card.Owner = Owner.Computer;
                 computerCards.Add(card);
                 csv += $"{randomSequence[i]},";
@@ -390,7 +392,7 @@ namespace AspCribbage.Controllers
             CountingPlayer player = new CountingPlayer(true);
             List<Card> crib = await player.SelectCribCards(computerCards, isComputerCrib);
 
-            Card sharedCard = deck[randomSequence[12]];
+            Card sharedCard = _deck.Cards[randomSequence[12]];
             csv += $"{randomSequence[12]},";
 
             string repeatUrl = $"cribbage/getrandomhand/{isComputerCrib}/{csv}";
@@ -423,7 +425,7 @@ namespace AspCribbage.Controllers
         private string CardListToCsv(List<Card> list)
         {
             string ret = "";
-            foreach (var card in list)
+            foreach (Card card in list)
             {
                 ret += $"{card},";
             }

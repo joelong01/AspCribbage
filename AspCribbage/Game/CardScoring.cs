@@ -1,107 +1,35 @@
-﻿using Cards;
+﻿using CribbageModels;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Cribbage
 {
-    public enum ScoreName
-    {
-        Fifteen,
-        Run,
-        Pair,
-        ThreeOfaKind,
-        FourOfAKind,
-        HisNibs,
-        HisNobs,
-        CountedRun,
-        ThirtyOne,
-        Go,
-        Flush,
-        LastCard
-    }
-
-    
-
-    public class Score
-    {
-        private Score()
-        {
-        }
-
-        public List<Card> Cards { get; } = new List<Card>();
-
-        public Score(ScoreName scoreName, int value, List<Card> cards)
-        {
-            ScoreName = scoreName;
-            Value = value;
-            if (cards != null)
-                Cards.AddRange(cards);
-        }
-
-        public ScoreName ScoreName { get; set; }
-        public int Value { get; set; }
-
-        public override string ToString()
-        {
-            return string.Format($"{CardScoring.PlayerScoreDescription[(int)ScoreName]} for {Value}");
-        }
-
-        public string ToString(PlayerType player)
-        {
-            if (player == PlayerType.Player)
-            {
-                return string.Format($"{CardScoring.PlayerScoreDescription[(int)ScoreName]} for {Value}");
-            }
-
-            return string.Format($"{CardScoring.ComputerScoreDescription[(int)ScoreName]} for {Value}");
-        }
-    }
 
     internal static class CardScoring
     {
-        public static string[] ScoreDescription =
-        {
-            "fifteen", "run", "pair", "three of a kind", "four of a kind",
-            "jack of the same suit", "cut a jack", "a run", "hit 31", "hit go", "flush",
-            "last card"
-        };
-
-        public static string[] PlayerScoreDescription =
-        {
-            "scored fifteen", "got a run", "scored a pair", "scored three of a kind", "scored four of a kind",
-            "have jack of the same suit", "cut a jack", "have a run", "hit 31", "hit go", "have a flush",
-            "have last card"
-        };
-
-        public static string[] ComputerScoreDescription =
-        {
-            "scored fifteen", "got a run", "scored a pair", "scored three of a kind", "scored four of a kind",
-            "has jack of the same suit", "cut a jack", "has a run", "hit 31", "hit go", "has a flush", "has last card"
-        };
-
         public static int ScoreCountingCardsPlayed(List<Card> playedCards, Card card, int currentCount,
-            out List<Score> scoreList)
+             out List<Score> scoreList)
         {
             scoreList = new List<Score>();
             if (playedCards == null)
             {
                 return 0;
             }
-            
+
             if (card.Value + currentCount > 31)
             {
                 return -1;
             }
 
-            var score = 0;
+            int score = 0;
 
             currentCount += card.Value;
             // 
             //  hit 15?
             if (currentCount == 15)
             {
-                var scr = new Score(ScoreName.Fifteen, 2, playedCards);
+                Score scr = new Score(ScoreName.Fifteen, 2, playedCards);
                 scoreList.Add(scr);
                 score += 2;
             }
@@ -113,7 +41,7 @@ namespace Cribbage
                 score += 2;
             }
 
-            var allCards = new List<Card>(playedCards)
+            List<Card> allCards = new List<Card>(playedCards)
             {
                 card
             };
@@ -121,13 +49,17 @@ namespace Cribbage
 
             //
             //   search for 2, 3, or 4 of a kind -- this has to happen before the sort!
-            var tempList = new List<Card>();
-            var samenessCount = 0;
-            for (var i = allCards.Count - 1; i > 0; i--)
+            List<Card> tempList = new List<Card>();
+            int samenessCount = 0;
+            for (int i = allCards.Count - 1; i > 0; i--)
             {
                 if (allCards[i].Rank == allCards[i - 1].Rank)
                 {
-                    tempList.Add(allCards[i]);
+                    if (!tempList.Contains(allCards[i]))
+                    {
+                        tempList.Add(allCards[i]);
+                    }
+
                     if (!tempList.Contains(allCards[i - 1]))
                     {
                         tempList.Add(allCards[i - 1]);
@@ -160,7 +92,7 @@ namespace Cribbage
             }
 
             // search for runs
-            var runs = ScoreCountedRun(allCards);
+            (int score, List<Card> cards) runs = ScoreCountedRun(allCards);
 
             if (runs.score > 0)
             {
@@ -175,12 +107,12 @@ namespace Cribbage
         //  just call ScoreRuns to get ths list..
         private static (int Score, List<Score> scoreList) ScoreRuns(List<Card> list)
         {
-            var cardLists = DemuxPairs(list);
-            var runs = new List<List<Card>>();
+            List<List<Card>> cardLists = DemuxPairs(list);
+            List<List<Card>> runs = new List<List<Card>>();
 
-            foreach (var cards in cardLists)
+            foreach (List<Card> cards in cardLists)
             {
-                var l = GetRuns(cards);
+                List<Card> l = GetRuns(cards);
                 if (l != null)
                 {
                     runs.Add(l);
@@ -193,8 +125,8 @@ namespace Cribbage
             {
                 if (runs[0].Count == runs[1].Count) // same length
                 {
-                    var same = false;
-                    for (var i = 0; i < runs[0].Count; i++)
+                    bool same = false;
+                    for (int i = 0; i < runs[0].Count; i++)
                     {
                         if (runs[0][i] != runs[1][i])
                         {
@@ -212,12 +144,12 @@ namespace Cribbage
                 }
             }
 
-            var scores = new List<Score>();
+            List<Score> scores = new List<Score>();
 
             //
             //  runs now how the list of cards that have runs in them
-            var score = 0;
-            foreach (var cards in runs)
+            int score = 0;
+            foreach (List<Card> cards in runs)
             {
                 if (cards.Count > 2)
                 {
@@ -243,12 +175,12 @@ namespace Cribbage
 
         private static List<List<Card>> DemuxPairs(List<Card> list)
         {
-            var cardList = new List<List<Card>>();
+            List<List<Card>> cardList = new List<List<Card>>();
 
             Card previousCard = null;
-            var consecutive = 0;
-            var pairs = 0;
-            foreach (var thisCard in list)
+            int consecutive = 0;
+            int pairs = 0;
+            foreach (Card thisCard in list)
             {
                 if (previousCard == null)
                 {
@@ -258,7 +190,7 @@ namespace Cribbage
                 else if (previousCard.Rank != thisCard.Rank)
                 {
                     consecutive = 0;
-                    foreach (var cards in cardList)
+                    foreach (List<Card> cards in cardList)
                     {
                         cards.Add(thisCard);
                     }
@@ -270,17 +202,17 @@ namespace Cribbage
 
                     if (consecutive == 1 && pairs == 1 || consecutive == 2 && pairs == 2)
                     {
-                        var count = cardList.Count;
-                        var newList = new List<Card>(cardList[count - 1]);
+                        int count = cardList.Count;
+                        List<Card> newList = new List<Card>(cardList[count - 1]);
                         cardList.Add(newList);
                         newList.Remove(previousCard);
                         newList.Add(thisCard);
                     }
                     else if (consecutive == 1 && pairs == 2)
                     {
-                        for (var k = 0; k < 2; k++)
+                        for (int k = 0; k < 2; k++)
                         {
-                            var newList = new List<Card>(cardList[k]);
+                            List<Card> newList = new List<Card>(cardList[k]);
                             newList.Remove(previousCard);
                             newList.Add(thisCard);
                             cardList.Add(newList);
@@ -298,7 +230,7 @@ namespace Cribbage
         //   3, four of 5 cards can be passed in
         private static List<Card> GetRuns(List<Card> list)
         {
-            var count = list.Count;
+            int count = list.Count;
             if (count < 3)
             {
                 return null;
@@ -383,24 +315,28 @@ namespace Cribbage
         private static (int Score, List<Score> ScoreList) ScorePairs(List<Card> list)
         {
 
-            var retList = new List<List<Card>>();
-            for (var i = 0; i < list.Count; i++)
+            List<List<Card>> retList = new List<List<Card>>();
+            for (int i = 0; i < list.Count; i++)
             {
-                var cardList = new List<Card> { list[i] };
-                for (var j = i + 1; j < list.Count; j++)
+                List<Card> cardList = new List<Card> { list[i] };
+                for (int j = i + 1; j < list.Count; j++)
                 {
                     if (list[i].Rank == list[j].Rank)
                     {
                         cardList.Add(list[j]);
                     }
                 }
-                if (cardList.Count != 1) retList.Add(cardList);
+                if (cardList.Count != 1)
+                {
+                    retList.Add(cardList);
+                }
+
                 i += cardList.Count - 1;
             }
 
-            var score = 0;
-            var scoreList = new List<Score>();
-            foreach (var lst in retList)
+            int score = 0;
+            List<Score> scoreList = new List<Score>();
+            foreach (List<Card> lst in retList)
             {
                 switch (lst.Count)
                 {
@@ -427,14 +363,14 @@ namespace Cribbage
 
         private static (int Score, List<List<Card>> CardList) ScoreFifteens(List<Card> list)
         {
-            var score = 0;
-            var fifteenList = new List<List<Card>>();
-            for (var i = 0; i < list.Count; i++)
+            int score = 0;
+            List<List<Card>> fifteenList = new List<List<Card>>();
+            for (int i = 0; i < list.Count; i++)
             {
-                var iVal = list[i].Value;
-                for (var j = i + 1; j < list.Count; j++)
+                int iVal = list[i].Value;
+                for (int j = i + 1; j < list.Count; j++)
                 {
-                    var ijVal = list[j].Value + iVal;
+                    int ijVal = list[j].Value + iVal;
                     if (ijVal > 15)
                     {
                         break; //because we are ordered;
@@ -442,7 +378,7 @@ namespace Cribbage
 
                     if (ijVal == 15)
                     {
-                        var twoCards = new List<Card>()
+                        List<Card> twoCards = new List<Card>()
                         {
                             list[i],
                             list[j]
@@ -452,9 +388,9 @@ namespace Cribbage
                     }
                     else
                     {
-                        for (var k = j + 1; k < list.Count; k++)
+                        for (int k = j + 1; k < list.Count; k++)
                         {
-                            var ijkVal = list[k].Value + ijVal;
+                            int ijkVal = list[k].Value + ijVal;
                             if (ijkVal > 15)
                             {
                                 break;
@@ -462,7 +398,7 @@ namespace Cribbage
 
                             if (ijkVal == 15)
                             {
-                                var threeCards = new List<Card>()
+                                List<Card> threeCards = new List<Card>()
                                 {
                                     list[i],
                                     list[j],
@@ -473,9 +409,9 @@ namespace Cribbage
                             }
                             else
                             {
-                                for (var x = k + 1; x < list.Count; x++)
+                                for (int x = k + 1; x < list.Count; x++)
                                 {
-                                    var ijkxVal = list[x].Value + ijkVal;
+                                    int ijkxVal = list[x].Value + ijkVal;
                                     if (ijkxVal > 15)
                                     {
                                         break;
@@ -483,7 +419,7 @@ namespace Cribbage
 
                                     if (ijkxVal == 15)
                                     {
-                                        var fourCards = new List<Card>()
+                                        List<Card> fourCards = new List<Card>()
                                         {
                                             list[i],
                                             list[j],
@@ -494,9 +430,12 @@ namespace Cribbage
                                         score += 2;
                                     }
 
-                                    if (list.Count != 5) continue;
+                                    if (list.Count != 5)
+                                    {
+                                        continue;
+                                    }
 
-                                    var sumAll = ijkVal + list[3].Value + list[4].Value;
+                                    int sumAll = ijkVal + list[3].Value + list[4].Value;
                                     if (sumAll == 15) // takes all 5...
                                     {
                                         score += 2;
@@ -522,21 +461,24 @@ namespace Cribbage
         //  call this to see if a run is in the cards based on the rules of counting
         private static (int score, List<Card> cards) ScoreCountedRun(IReadOnlyList<Card> playedCards)
         {
-            var n = 3;
-            var count = playedCards.Count;
-            var score = 0;
+            int n = 3;
+            int count = playedCards.Count;
+            int score = 0;
 
-            if (count <= 2) return (score, null);
+            if (count <= 2)
+            {
+                return (score, null);
+            }
 
-            var cards = new List<Card>();
-            var retList = new List<Card>();
-            var longestRun = 0;
+            List<Card> cards = new List<Card>();
+            List<Card> retList = new List<Card>();
+            int longestRun = 0;
             do
             {
                 cards.Clear();
                 //
                 //  add the last n cards ... starting with 3
-                var i = 0;
+                int i = 0;
                 for (i = 0; i < n; i++)
                 {
                     cards.Add(playedCards[count - i - 1]);
@@ -569,7 +511,7 @@ namespace Cribbage
                 score += longestRun + 1;
             }
 
-            for (var i = 0; i < score; i++)
+            for (int i = 0; i < score; i++)
             {
                 retList.Add(playedCards[count - i - 1]);
             }
@@ -592,9 +534,9 @@ namespace Cribbage
         [SuppressMessage("ReSharper", "InvertIf")]
         public static int ScoreHand(List<Card> hand, Card sharedCard, HandType handType, out List<Score> scoreList)
         {
-            var score = 0;
+            int score = 0;
             scoreList = new List<Score>();
-            var retNibs = ScoreNibs(hand, sharedCard); // this is the only one where it matters which particular card is shared
+            (int Score, Card Card) retNibs = ScoreNibs(hand, sharedCard); // this is the only one where it matters which particular card is shared
             if (retNibs.Score > 0)
             {
                 scoreList.Add(new Score(ScoreName.HisNibs, 1, new List<Card>() { retNibs.Card, sharedCard }));
@@ -603,17 +545,17 @@ namespace Cribbage
 
             //
             //   DON't SORT BEFORE NIBS!!!
-            var cards = new List<Card>(hand);
+            List<Card> cards = new List<Card>(hand);
             if (sharedCard != null) // sharedCard null when calculating value of hand prior to seeing the shared card
             {
                 cards.Add(sharedCard);
             }
 
             cards.Sort(Card.CompareCardsByRank);
-            var tempScore = ScoreFifteens(cards);
+            (int Score, List<List<Card>> CardList) tempScore = ScoreFifteens(cards);
             if (tempScore.Score > 0)
             {
-                foreach (var cList in tempScore.CardList)
+                foreach (List<Card> cList in tempScore.CardList)
                 {
                     scoreList.Add(new Score(ScoreName.Fifteen, 2, cList));
                 }
@@ -621,21 +563,21 @@ namespace Cribbage
                 score += tempScore.Score;
             }
 
-            var scorePairs = ScorePairs(cards);
+            (int Score, List<Score> ScoreList) scorePairs = ScorePairs(cards);
             if (scorePairs.Score > 0)
             {
                 score += scorePairs.Score;
                 scoreList.AddRange(scorePairs.ScoreList);
             }
 
-            var scoreRuns = ScoreRuns(cards);
+            (int Score, List<Score> scoreList) scoreRuns = ScoreRuns(cards);
             if (scoreRuns.Score > 0)
             {
                 scoreList.AddRange(scoreRuns.scoreList);
                 score += scoreRuns.Score;
             }
 
-            var scoreFlush = ScoreFlush(cards, handType);
+            (int scoreValue, Score Score) scoreFlush = ScoreFlush(cards, handType);
             if (scoreFlush.scoreValue > 0)
             {
                 scoreList.Add(scoreFlush.Score);
@@ -649,9 +591,9 @@ namespace Cribbage
         private static (int scoreValue, Score Score) ScoreFlush(List<Card> cards, HandType handType)
         {
             cards.Sort(Card.CompareCardsBySuit);
-            var max = 0;
-            var run = 1;
-            for (var i = 0; i < cards.Count - 1; i++)
+            int max = 0;
+            int run = 1;
+            for (int i = 0; i < cards.Count - 1; i++)
             {
                 if (cards[i].Suit == cards[i + 1].Suit)
                 {
@@ -673,7 +615,10 @@ namespace Cribbage
                 max = run;
             }
 
-            if (max < 4) return (0, null);
+            if (max < 4)
+            {
+                return (0, null);
+            }
 
             if (handType == HandType.Crib && max < 5)
             {
@@ -682,8 +627,8 @@ namespace Cribbage
 
             }
 
-            var flushCards = new List<Card>();
-            for (var i = 0; i < max; i++)
+            List<Card> flushCards = new List<Card>();
+            for (int i = 0; i < max; i++)
             {
                 flushCards.Add(cards[i]);
             };
@@ -698,7 +643,7 @@ namespace Cribbage
                 return (0, null);
             }
 
-            for (var i = 0; i < 4; i++)
+            for (int i = 0; i < 4; i++)
             {
                 if (hand[i].Rank == 11) //Jack -- 1 indexed
                 {

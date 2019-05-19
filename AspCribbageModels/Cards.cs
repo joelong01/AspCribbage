@@ -1,7 +1,6 @@
-﻿using Cribbage;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace Cards
+namespace CribbageModels
 {
     public enum CardName
     {
@@ -96,7 +95,7 @@ namespace Cards
         public Suit Suit { get; internal set; }
         public int Rank { get; internal set; } // 1...13
         public int Value { get; internal set; } // 1..10
-        public Owner Owner { get; internal set; }
+        public Owner Owner { get; set; }
 
 
         public Card(CardName card, CardOrdinal ordinal, int rank, int value, Suit suit, Owner owner)
