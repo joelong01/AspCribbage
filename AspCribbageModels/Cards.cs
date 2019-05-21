@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System.Collections.Generic;
 
 namespace CribbageModels
 {
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum CardName
     {
         AceOfClubs = 0,
@@ -60,6 +63,7 @@ namespace CribbageModels
         Uninitialized = 53
     }
 
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum CardOrdinal
     {
         Ace = 1,
@@ -77,6 +81,7 @@ namespace CribbageModels
         King
     }
 
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum Suit
     {
         Clubs = 1,
@@ -88,15 +93,27 @@ namespace CribbageModels
 
 
 
+    [JsonObject(MemberSerialization.OptIn)]
     public class Card
     {
-        public CardName CardName { get; internal set; }
-        public CardOrdinal Ordinal { get; internal set; }
-        public Suit Suit { get; internal set; }
-        public int Rank { get; internal set; } // 1...13
-        public int Value { get; internal set; } // 1..10
+        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonProperty]
+        public CardName CardName { get; private set; }
+        [JsonProperty]
+        [JsonConverter(typeof(StringEnumConverter))]
+        public CardOrdinal Ordinal { get; private set; }
+        [JsonProperty]
+        [JsonConverter(typeof(StringEnumConverter))]
+        public Suit Suit { get; private set; }
+        [JsonProperty]
+        public int Rank { get; private set; } // 1...13
+        [JsonProperty]
+        public int Value { get; private set; } // 1..10
+        [JsonProperty]
+        [JsonConverter(typeof(StringEnumConverter))]
         public Owner Owner { get; set; }
 
+        public Card() { }
 
         public Card(CardName card, CardOrdinal ordinal, int rank, int value, Suit suit, Owner owner)
         {
@@ -117,10 +134,6 @@ namespace CribbageModels
         public Card(CardName name)
         {
             CardName = name;
-        }
-
-        public Card() // called by the XAML editor
-        {
         }
 
         public object Tag { get; set; } = null;
