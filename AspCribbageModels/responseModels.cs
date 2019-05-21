@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 
 namespace CribbageModels
-{ 
+{
     public class CutCardsResponse
     {
 
@@ -12,9 +12,9 @@ namespace CribbageModels
             this.RepeatUrl = url;
         }
 
-        public Card PlayerCard { get; internal set; }
-        public Card ComputerCard { get; internal set; }
-        public string RepeatUrl { get; internal set; }
+        public Card PlayerCard { get; set; }
+        public Card ComputerCard { get; set; }
+        public string RepeatUrl { get; set; }
 
     }
     public class ScoreResponse
@@ -46,12 +46,12 @@ namespace CribbageModels
 
     public class GetRandomHandResponse
     {
-        public List<Card> PlayerCards { get; internal set; }
-        public List<Card> ComputerCards { get; internal set; }
-        public List<Card> ComputerCribCards { get; internal set; }
-        public Card SharedCard { get; internal set; }
-        public bool HisNobs { get; internal set; }
-        public string RepeatUrl { get; internal set; }
+        public List<Card> PlayerCards { get; set; }
+        public List<Card> ComputerCards { get; set; }
+        public List<Card> ComputerCribCards { get; set; }
+        public Card SharedCard { get; set; }
+        public bool HisNobs { get; set; }
+        public string RepeatUrl { get; set; }
 
         public GetRandomHandResponse(List<Card> pCards, List<Card> cCards, List<Card> crib, Card shared, bool nobs, string url)
         {

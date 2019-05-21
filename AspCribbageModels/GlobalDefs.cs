@@ -1,9 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
 using System.Collections.Generic;
 
 
 namespace CribbageModels
 {
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum ScoreName
     {
         Fifteen,
@@ -20,7 +23,7 @@ namespace CribbageModels
         LastCard
     }
 
-
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum Owner
     {
         Player,
@@ -29,20 +32,20 @@ namespace CribbageModels
         Crib,
         Uninitialized
     }
-
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum HandType
     {
         Crib = 0,
         Hand = 1
     }
-
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum PlayerType
     {
         Player = 0,
         Computer = 1
     }
 
-
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum Open
     {
         Up,
@@ -50,7 +53,7 @@ namespace CribbageModels
         Right,
         Down
     }
-
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum ScoreType
     {
         Count,
@@ -61,7 +64,7 @@ namespace CribbageModels
         Unspecified
     }
 
-
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum StatType
     {
         Count,
@@ -70,7 +73,7 @@ namespace CribbageModels
         Average,
         Total
     }
-
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum StatViewType
     {
         Game,
@@ -78,7 +81,7 @@ namespace CribbageModels
         Crib,
         Counting
     }
-
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum StatName
     {
         Ignored,

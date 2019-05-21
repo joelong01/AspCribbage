@@ -3,6 +3,7 @@ using Cribbage;
 using CribbageModels;
 using CribbagePlayers;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -341,7 +342,7 @@ namespace AspCribbage.Controllers
                 string randomInts = await response.Content.ReadAsStringAsync();
                 string[] values = randomInts.Split("\n", StringSplitOptions.RemoveEmptyEntries);
                 int[] sequence = Array.ConvertAll(values, int.Parse);
-                return await GetRandomHandAsync(sequence, isComputerCrib);
+                return await GetRandomHandAsync(sequence, isComputerCrib);                               
 
             }
 
